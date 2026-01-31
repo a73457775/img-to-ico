@@ -6,11 +6,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Simple and fast tool to convert images to ICO icon files">
     <title>Image to ICO Converter - Convert Images to Icons</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
         }
 
         :root {
@@ -30,7 +35,7 @@
         }
 
         body {
-            font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
             background: linear-gradient(135deg, var(--bg-main) 0%, hsl(240, 15%, 8%) 100%);
             color: var(--text);
             min-height: 100vh;
@@ -115,7 +120,6 @@
             padding: 2.5rem;
             box-shadow: 0 20px 60px var(--shadow);
             border: 1px solid var(--border);
-            backdrop-filter: blur(10px);
             animation: fadeIn 0.6s ease-out 0.2s both;
         }
 
