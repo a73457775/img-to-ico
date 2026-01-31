@@ -4,7 +4,7 @@
 
 ## 📦 프로젝트 정보
 
-- **파일 위치**: `c:\programin\img_to_ico\img_to_ico.html`
+- **파일 위치**: `index.html`
 - **용량**: 약 **15KB** (단일 파일)
 - **개발 언어**: HTML5, CSS3, Vanilla JavaScript
 
@@ -19,7 +19,7 @@
 
 ## 🚀 사용 방법
 
-1. `img_to_ico.html` 파일을 더블클릭하여 브라우저(Chrome, Edge 등)에서 엽니다.
+1. `index.html` 파일을 더블클릭하여 브라우저(Chrome, Edge 등)에서 엽니다.
 2. 변환하고 싶은 이미지(JPG, PNG)를 중앙 영역에 드롭하거나 클릭하여 선택합니다.
 3. 원하는 아이콘 크기(16, 32, 48, 64 등)를 체크박스에서 선택합니다.
 4. **"💾 ICO로 변환"** 버튼을 클릭합니다.
