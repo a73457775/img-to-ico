@@ -1,0 +1,946 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Simple and fast tool to convert images to ICO icon files">
+    <title>Image to ICO Converter - Convert Images to Icons</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: hsl(250, 85%, 65%);
+            --primary-dark: hsl(250, 85%, 55%);
+            --primary-light: hsl(250, 85%, 75%);
+            --secondary: hsl(190, 85%, 60%);
+            --bg-main: hsl(240, 15%, 10%);
+            --bg-card: hsl(240, 12%, 14%);
+            --bg-hover: hsl(240, 12%, 18%);
+            --text: hsl(0, 0%, 95%);
+            --text-muted: hsl(0, 0%, 65%);
+            --border: hsl(240, 10%, 25%);
+            --success: hsl(142, 76%, 56%);
+            --error: hsl(0, 72%, 60%);
+            --shadow: rgba(0, 0, 0, 0.5);
+        }
+
+        body {
+            font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, var(--bg-main) 0%, hsl(240, 15%, 8%) 100%);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 2rem 1rem;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: -50%;
+            right: -50%;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle, var(--primary) 0%, transparent 70%);
+            opacity: 0.08;
+            animation: float 20s ease-in-out infinite;
+            pointer-events: none;
+        }
+
+        @keyframes float {
+
+            0%,
+            100% {
+                transform: translate(0, 0) scale(1);
+            }
+
+            50% {
+                transform: translate(-20px, 20px) scale(1.1);
+            }
+        }
+
+        .container {
+            max-width: 600px;
+            width: 100%;
+            position: relative;
+            z-index: 1;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 3rem;
+            animation: slideDown 0.6s ease-out;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--primary-light), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 0.5rem;
+            letter-spacing: -0.02em;
+        }
+
+        .subtitle {
+            color: var(--text-muted);
+            font-size: 1rem;
+            font-weight: 400;
+        }
+
+        .card {
+            background: var(--bg-card);
+            border-radius: 20px;
+            padding: 2.5rem;
+            box-shadow: 0 20px 60px var(--shadow);
+            border: 1px solid var(--border);
+            backdrop-filter: blur(10px);
+            animation: fadeIn 0.6s ease-out 0.2s both;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .drop-zone {
+            border: 2px dashed var(--border);
+            border-radius: 16px;
+            padding: 3rem 2rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: linear-gradient(135deg, transparent, rgba(255, 255, 255, 0.02));
+            position: relative;
+            overflow: hidden;
+        }
+
+        .drop-zone::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .drop-zone:hover {
+            border-color: var(--primary);
+            background: rgba(255, 255, 255, 0.03);
+        }
+
+        .drop-zone.drag-over {
+            border-color: var(--primary);
+            background: rgba(99, 102, 241, 0.1);
+            transform: scale(1.02);
+        }
+
+        .drop-zone.drag-over::before {
+            opacity: 0.05;
+        }
+
+        .drop-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            opacity: 0.7;
+            position: relative;
+            z-index: 1;
+            animation: bounce 2s ease-in-out infinite;
+        }
+
+        @keyframes bounce {
+
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-10px);
+            }
+        }
+
+        .drop-text {
+            font-size: 1.125rem;
+            color: var(--text);
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            position: relative;
+            z-index: 1;
+        }
+
+        .drop-subtext {
+            font-size: 0.875rem;
+            color: var(--text-muted);
+            position: relative;
+            z-index: 1;
+        }
+
+        #fileInput {
+            display: none;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            border: none;
+            padding: 0.875rem 2rem;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, var(--primary-light), var(--secondary));
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(99, 102, 241, 0.5);
+        }
+
+        .btn:hover::before {
+            opacity: 1;
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn span {
+            position: relative;
+            z-index: 1;
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
+        .preview-section {
+            display: none;
+            margin-top: 2rem;
+            animation: fadeIn 0.4s ease-out;
+        }
+
+        .preview-section.active {
+            display: block;
+        }
+
+        .preview-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: var(--text);
+        }
+
+        .preview-image {
+            width: 100%;
+            max-height: 240px;
+            object-fit: contain;
+            border-radius: 12px;
+            background: rgba(0, 0, 0, 0.2);
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+            border: 1px solid var(--border);
+        }
+
+        .preview-details {
+            margin-bottom: 2rem;
+            padding: 1.25rem;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            text-align: center;
+        }
+
+        #previewFileName {
+            display: block;
+            font-weight: 600;
+            color: var(--text);
+            margin-bottom: 0.35rem;
+            font-size: 1rem;
+            word-break: break-all;
+        }
+
+        #previewMeta {
+            display: block;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            letter-spacing: 0.02em;
+        }
+
+        .size-selector {
+            margin-bottom: 2rem;
+            background: rgba(255, 255, 255, 0.03);
+            padding: 1.5rem;
+            border-radius: 16px;
+            border: 1px solid var(--border);
+        }
+
+        .size-label {
+            font-size: 0.875rem;
+            color: var(--text-muted);
+            margin-bottom: 0.75rem;
+            display: block;
+        }
+
+        .size-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+            gap: 0.75rem;
+        }
+
+        .size-option {
+            position: relative;
+        }
+
+        .size-option input {
+            position: absolute;
+            opacity: 0;
+            cursor: pointer;
+            width: 0;
+            height: 0;
+        }
+
+        .size-checkbox {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.75rem;
+            background: var(--bg-hover);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            user-select: none;
+        }
+
+        .size-option input:checked+.size-checkbox {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            border-color: var(--primary);
+            color: white;
+            box-shadow: 0 8px 20px rgba(99, 102, 241, 0.4);
+            transform: translateY(-2px);
+        }
+
+        .size-checkbox:hover {
+            border-color: var(--primary-light);
+            background: hsl(240, 12%, 22%);
+            color: var(--text);
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .action-buttons .btn {
+            flex: 1;
+        }
+
+        .btn-secondary {
+            background: var(--bg-main);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .btn-secondary:hover {
+            background: var(--bg-hover);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+        }
+
+        .status-message {
+            margin-top: 1rem;
+            padding: 1rem;
+            border-radius: 10px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            display: none;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .status-message.success {
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid var(--success);
+            color: var(--success);
+            display: block;
+        }
+
+        .status-message.error {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid var(--error);
+            color: var(--error);
+            display: block;
+        }
+
+        /* Results Section */
+        .results-section {
+            margin-top: 2rem;
+            display: none;
+            border-top: 1px solid var(--border);
+            padding-top: 2rem;
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        .results-section.active {
+            display: block;
+        }
+
+        .results-grid {
+            display: grid;
+            gap: 1rem;
+        }
+
+        .result-item {
+            background: var(--bg-main);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: transform 0.2s ease;
+        }
+
+        .result-item:hover {
+            transform: scale(1.01);
+            border-color: var(--primary);
+        }
+
+        .result-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .result-icon-preview {
+            width: 40px;
+            height: 40px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+
+        .result-details {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .result-name {
+            font-weight: 600;
+            font-size: 0.9375rem;
+        }
+
+        .result-meta {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        .download-link {
+            background: linear-gradient(135deg, var(--success), #059669);
+            color: white;
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
+        }
+
+        .download-link:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(16, 185, 129, 0.3);
+        }
+
+        footer {
+            margin-top: 3rem;
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 0.875rem;
+            animation: fadeIn 0.6s ease-out 0.4s both;
+        }
+
+        footer a {
+            color: var(--primary-light);
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        footer a:hover {
+            color: var(--secondary);
+        }
+
+        @media (max-width: 640px) {
+            h1 {
+                font-size: 2rem;
+            }
+
+            .card {
+                padding: 1.5rem;
+            }
+
+            .drop-zone {
+                padding: 2rem 1rem;
+            }
+
+            .action-buttons {
+                flex-direction: column;
+            }
+
+            .size-grid {
+                grid-template-columns: repeat(auto-fit, minmax(70px, 1fr));
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <header>
+            <h1>🎨 Image to ICO</h1>
+            <p class="subtitle">Convert your images into high-quality icon files</p>
+        </header>
+
+        <div class="card">
+            <div class="size-selector">
+                <label class="size-label">Select Icon Size</label>
+                <div class="size-grid">
+                    <label class="size-option">
+                        <input type="radio" name="size" value="16">
+                        <div class="size-checkbox">16×16</div>
+                    </label>
+                    <label class="size-option">
+                        <input type="radio" name="size" value="32">
+                        <div class="size-checkbox">32×32</div>
+                    </label>
+                    <label class="size-option">
+                        <input type="radio" name="size" value="48">
+                        <div class="size-checkbox">48×48</div>
+                    </label>
+                    <label class="size-option">
+                        <input type="radio" name="size" value="64">
+                        <div class="size-checkbox">64×64</div>
+                    </label>
+                    <label class="size-option">
+                        <input type="radio" name="size" value="128">
+                        <div class="size-checkbox">128×128</div>
+                    </label>
+                    <label class="size-option">
+                        <input type="radio" name="size" value="256" checked>
+                        <div class="size-checkbox">256×256</div>
+                    </label>
+                </div>
+            </div>
+
+            <div class="drop-zone" id="dropZone">
+                <div class="drop-icon">📁</div>
+                <div class="drop-text">Drop your image here</div>
+                <div class="drop-subtext">or click to select a file (JPG, PNG)</div>
+            </div>
+            <input type="file" id="fileInput" accept="image/png,image/jpeg,image/jpg">
+
+            <div class="preview-section" id="previewSection">
+                <h3 class="preview-title">Preview</h3>
+                <img id="preview" class="preview-image" alt="Preview">
+
+                <div class="preview-details">
+                    <span id="previewFileName"></span>
+                    <span id="previewMeta"></span>
+                </div>
+
+                <div class="action-buttons">
+                    <button class="btn btn-secondary" id="resetBtn">
+                        <span>🔄 Reset</span>
+                    </button>
+                    <button class="btn" id="convertBtn">
+                        <span>💾 Convert to ICO</span>
+                    </button>
+                </div>
+
+                <div class="status-message" id="statusMessage"></div>
+            </div>
+
+            <div class="results-section" id="resultsSection">
+                <h3 class="preview-title">Conversion Results</h3>
+                <div class="results-grid" id="resultsGrid">
+                    <!-- Results will be appended here -->
+                </div>
+            </div>
+        </div>
+
+    </div>
+    </div>
+
+    <script>
+        const dropZone = document.getElementById('dropZone');
+        const fileInput = document.getElementById('fileInput');
+        const previewSection = document.getElementById('previewSection');
+        const preview = document.getElementById('preview');
+        const convertBtn = document.getElementById('convertBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const statusMessage = document.getElementById('statusMessage');
+        const resultsSection = document.getElementById('resultsSection');
+        const resultsGrid = document.getElementById('resultsGrid');
+
+        let currentImage = null;
+        let originalFileName = 'icon';
+
+        // 드롭존 클릭으로 파일 선택
+        dropZone.addEventListener('click', () => {
+            fileInput.click();
+        });
+
+        // 파일 선택
+        fileInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                originalFileName = file.name.split('.').slice(0, -1).join('.') || 'icon';
+                handleFile(file);
+            }
+        });
+
+        // 드래그 앤 드롭
+        dropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropZone.classList.add('drag-over');
+        });
+
+        dropZone.addEventListener('dragleave', () => {
+            dropZone.classList.remove('drag-over');
+        });
+
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('drag-over');
+
+            const file = e.dataTransfer.files[0];
+            if (file && file.type.match('image.*')) {
+                originalFileName = file.name.split('.').slice(0, -1).join('.') || 'icon';
+                handleFile(file);
+            } else {
+                showError('Only image files can be uploaded.');
+            }
+        });
+
+        // 파일 처리
+        function handleFile(file) {
+            const reader = new FileReader();
+
+            reader.onload = (e) => {
+                const img = new Image();
+                img.onload = () => {
+                    currentImage = img;
+                    preview.src = e.target.result;
+
+                    // 파일 상세 정보 표시
+                    document.getElementById('previewFileName').textContent = file.name;
+                    document.getElementById('previewMeta').textContent = `${formatBytes(file.size)} • ${img.width}x${img.height}px`;
+
+                    previewSection.classList.add('active');
+                    hideStatus();
+                };
+                img.src = e.target.result;
+            };
+
+            reader.readAsDataURL(file);
+        }
+
+        // 리셋
+        resetBtn.addEventListener('click', () => {
+            fileInput.value = '';
+            currentImage = null;
+            previewSection.classList.remove('active');
+            resultsSection.classList.remove('active');
+            resultsGrid.innerHTML = '';
+            hideStatus();
+        });
+
+        // ICO 변환 및 다운로드
+        convertBtn.addEventListener('click', async () => {
+            if (!currentImage) return;
+
+            const selectedRadio = document.querySelector('input[name="size"]:checked');
+            if (!selectedRadio) {
+                showError('Please select a size.');
+                return;
+            }
+
+            const selectedSize = parseInt(selectedRadio.value);
+            const sizesArr = [selectedSize];
+
+            try {
+                convertBtn.disabled = true;
+                showStatus('Converting...', 'success');
+
+                const icoBlob = await createICO(currentImage, sizesArr);
+                const url = URL.createObjectURL(icoBlob);
+
+                addResultItem(url, icoBlob.size, sizesArr);
+
+                showSuccess(`✅ ICO file is ready! (${selectedSize}x${selectedSize})`);
+            } catch (error) {
+                showError('An error occurred during conversion: ' + error.message);
+            } finally {
+                convertBtn.disabled = false;
+            }
+        });
+
+        // 결과 아이템 추가
+        function addResultItem(url, size, sizes) {
+            resultsSection.classList.add('active');
+
+            const item = document.createElement('div');
+            item.className = 'result-item';
+
+            const sizeText = sizes.join(', ');
+            const formattedSize = formatBytes(size);
+            const fileName = `${originalFileName}.ico`;
+
+            item.innerHTML = `
+                <div class="result-info">
+                    <div class="result-icon-preview">🖼️</div>
+                    <div class="result-details">
+                        <span class="result-name">${fileName}</span>
+                        <span class="result-meta">${formattedSize} • Sizes: ${sizeText}</span>
+                    </div>
+                </div>
+                <a href="${url}" download="${fileName}" class="download-link">
+                    <span>📥 Download</span>
+                </a>
+            `;
+
+            // 기존 결과가 있으면 맨 앞에 추가 (최신순)
+            if (resultsGrid.firstChild) {
+                resultsGrid.insertBefore(item, resultsGrid.firstChild);
+            } else {
+                resultsGrid.appendChild(item);
+            }
+
+            // 부드러운 스크롤
+            resultsSection.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+
+        // 바이트 포맷
+        function formatBytes(bytes, decimals = 2) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const dm = decimals < 0 ? 0 : decimals;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
+        }
+
+        // ICO 파일 생성
+        async function createICO(image, sizes) {
+            const images = await Promise.all(sizes.map(size => resizeImage(image, size)));
+            const iconDir = createIconDir(images);
+            const bitmaps = images.map(createBitmap);
+
+            const totalSize = 6 + iconDir.length + bitmaps.reduce((sum, bmp) => sum + bmp.length, 0);
+            const icoData = new Uint8Array(totalSize);
+
+            let offset = 0;
+
+            // ICO Header
+            icoData.set([0, 0, 1, 0], offset); // Reserved, Type
+            offset += 4;
+            icoData.set(new Uint8Array(new Uint16Array([images.length]).buffer), offset); // Image count
+            offset += 2;
+
+            // Icon Directory
+            icoData.set(iconDir, offset);
+            offset += iconDir.length;
+
+            // Bitmaps
+            bitmaps.forEach(bmp => {
+                icoData.set(bmp, offset);
+                offset += bmp.length;
+            });
+
+            return new Blob([icoData], { type: 'image/x-icon' });
+        }
+
+        // 이미지 리사이즈
+        function resizeImage(image, size) {
+            return new Promise((resolve) => {
+                const canvas = document.createElement('canvas');
+                canvas.width = size;
+                canvas.height = size;
+                const ctx = canvas.getContext('2d');
+                ctx.imageSmoothingEnabled = true;
+                ctx.imageSmoothingQuality = 'high';
+                ctx.drawImage(image, 0, 0, size, size);
+
+                canvas.toBlob((blob) => {
+                    const reader = new FileReader();
+                    reader.onload = () => {
+                        canvas.toBlob((pngBlob) => {
+                            resolve({ size, canvas, blob: pngBlob });
+                        }, 'image/png');
+                    };
+                    reader.readAsDataURL(blob);
+                }, 'image/png');
+            });
+        }
+
+        // Icon Directory 생성
+        function createIconDir(images) {
+            const dirSize = images.length * 16;
+            const dir = new Uint8Array(dirSize);
+            let imageOffset = 6 + dirSize;
+
+            images.forEach((img, i) => {
+                const offset = i * 16;
+                const canvas = img.canvas;
+                const ctx = canvas.getContext('2d');
+                const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                const bmpSize = 40 + (canvas.width * canvas.height * 4) + (Math.ceil(canvas.width / 32) * 4 * canvas.height);
+
+                dir[offset] = canvas.width === 256 ? 0 : canvas.width;
+                dir[offset + 1] = canvas.height === 256 ? 0 : canvas.height;
+                dir[offset + 2] = 0; // Color palette
+                dir[offset + 3] = 0; // Reserved
+                dir.set(new Uint8Array(new Uint16Array([1]).buffer), offset + 4); // Color planes
+                dir.set(new Uint8Array(new Uint16Array([32]).buffer), offset + 6); // Bits per pixel
+                dir.set(new Uint8Array(new Uint32Array([bmpSize]).buffer), offset + 8); // Image size
+                dir.set(new Uint8Array(new Uint32Array([imageOffset]).buffer), offset + 12); // Image offset
+
+                imageOffset += bmpSize;
+            });
+
+            return dir;
+        }
+
+        // Bitmap 생성
+        function createBitmap(img) {
+            const canvas = img.canvas;
+            const ctx = canvas.getContext('2d');
+            const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            const data = imageData.data;
+
+            const headerSize = 40;
+            const rowSize = Math.ceil(canvas.width / 32) * 4;
+            const pixelDataSize = canvas.width * canvas.height * 4;
+            const maskSize = rowSize * canvas.height;
+            const totalSize = headerSize + pixelDataSize + maskSize;
+
+            const bmp = new Uint8Array(totalSize);
+            let offset = 0;
+
+            // BITMAPINFOHEADER
+            bmp.set(new Uint8Array(new Uint32Array([40]).buffer), offset); // Header size
+            offset += 4;
+            bmp.set(new Uint8Array(new Int32Array([canvas.width]).buffer), offset);
+            offset += 4;
+            bmp.set(new Uint8Array(new Int32Array([canvas.height * 2]).buffer), offset); // Height * 2
+            offset += 4;
+            bmp.set(new Uint8Array(new Uint16Array([1]).buffer), offset); // Planes
+            offset += 2;
+            bmp.set(new Uint8Array(new Uint16Array([32]).buffer), offset); // Bits per pixel
+            offset += 2;
+            bmp.set(new Uint8Array(new Uint32Array([0]).buffer), offset); // Compression
+            offset += 4;
+            bmp.set(new Uint8Array(new Uint32Array([pixelDataSize]).buffer), offset); // Image size
+            offset += 4;
+            offset += 16; // X/Y pixels per meter, colors used, important colors (all 0)
+
+            // Pixel data (BGRA, bottom-up)
+            for (let y = canvas.height - 1; y >= 0; y--) {
+                for (let x = 0; x < canvas.width; x++) {
+                    const i = (y * canvas.width + x) * 4;
+                    bmp[offset++] = data[i + 2]; // B
+                    bmp[offset++] = data[i + 1]; // G
+                    bmp[offset++] = data[i];     // R
+                    bmp[offset++] = data[i + 3]; // A
+                }
+            }
+
+            // AND mask (all transparent since we use alpha channel)
+            offset += maskSize;
+
+            return bmp;
+        }
+
+        // 상태 메시지
+        function showStatus(message, type) {
+            statusMessage.textContent = message;
+            statusMessage.className = `status-message ${type}`;
+        }
+
+        function showSuccess(message) {
+            showStatus(message, 'success');
+        }
+
+        function showError(message) {
+            showStatus(message, 'error');
+        }
+
+        function hideStatus() {
+            statusMessage.className = 'status-message';
+        }
+    </script>
+</body>
+
+</html>
