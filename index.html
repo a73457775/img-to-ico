@@ -19,19 +19,20 @@
         }
 
         :root {
-            --primary: hsl(250, 85%, 65%);
-            --primary-dark: hsl(250, 85%, 55%);
-            --primary-light: hsl(250, 85%, 75%);
-            --secondary: hsl(190, 85%, 60%);
-            --bg-main: hsl(240, 15%, 10%);
-            --bg-card: hsl(240, 12%, 14%);
-            --bg-hover: hsl(240, 12%, 18%);
-            --text: hsl(0, 0%, 95%);
-            --text-muted: hsl(0, 0%, 65%);
-            --border: hsl(240, 10%, 25%);
-            --success: hsl(142, 76%, 56%);
-            --error: hsl(0, 72%, 60%);
-            --shadow: rgba(0, 0, 0, 0.5);
+            --primary: hsl(260, 95%, 68%);
+            --primary-dark: hsl(260, 90%, 60%);
+            --primary-light: hsl(260, 100%, 75%);
+            --secondary: hsl(195, 90%, 60%);
+            --bg-main: hsl(240, 20%, 8%);
+            --bg-card: hsl(240, 15%, 12%);
+            --bg-hover: hsl(240, 15%, 16%);
+            --text: hsl(0, 0%, 98%);
+            --text-muted: hsl(240, 5%, 70%);
+            --border: hsla(240, 10%, 30%, 0.5);
+            --border-glow: hsla(260, 95%, 68%, 0.2);
+            --success: hsl(150, 80%, 55%);
+            --error: hsl(0, 85%, 65%);
+            --shadow: rgba(0, 0, 0, 0.6);
         }
 
         body {
@@ -50,14 +51,29 @@
         body::before {
             content: '';
             position: fixed;
-            top: -50%;
-            right: -50%;
-            width: 100%;
-            height: 100%;
+            top: -10%;
+            left: -10%;
+            width: 40%;
+            height: 40%;
             background: radial-gradient(circle, var(--primary) 0%, transparent 70%);
-            opacity: 0.08;
-            animation: float 20s ease-in-out infinite;
+            opacity: 0.15;
             pointer-events: none;
+            filter: blur(80px);
+            z-index: -1;
+        }
+
+        body::after {
+            content: '';
+            position: fixed;
+            bottom: -10%;
+            right: -10%;
+            width: 40%;
+            height: 40%;
+            background: radial-gradient(circle, var(--secondary) 0%, transparent 70%);
+            opacity: 0.1;
+            pointer-events: none;
+            filter: blur(80px);
+            z-index: -1;
         }
 
         @keyframes float {
@@ -115,12 +131,25 @@
         }
 
         .card {
-            background: var(--bg-card);
-            border-radius: 20px;
+            background: linear-gradient(165deg, var(--bg-card), hsl(240, 15%, 10%));
+            border-radius: 24px;
             padding: 2.5rem;
-            box-shadow: 0 20px 60px var(--shadow);
+            box-shadow: 0 25px 50px -12px var(--shadow), 0 0 20px 0 var(--border-glow);
             border: 1px solid var(--border);
-            animation: fadeIn 0.6s ease-out 0.2s both;
+            animation: fadeIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.2s both;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--primary-light), transparent);
+            opacity: 0.3;
         }
 
         @keyframes fadeIn {
